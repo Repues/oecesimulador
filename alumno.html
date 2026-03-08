@@ -212,71 +212,96 @@
         .acronym-item b { color: var(--osce-red); font-size: 1.15rem; display: block; margin-bottom: 6px; }
 
         /* RESULTS */
-        #results-overlay { overflow-y: auto; align-items: flex-start; padding: 20px 0; }
-
+        #results-overlay {
+            overflow-y: auto;
+            align-items: flex-start;
+            padding: 24px 12px;
+            background: rgba(0,0,0,0.55);
+        }
         .results-card {
-            background: white;
-            padding: 28px 24px;
-            border-radius: 24px;
-            max-width: 480px;
-            width: 92%;
-            text-align: center;
-            box-shadow: var(--shadow-float);
+            border-radius: 20px;
+            max-width: 880px;
+            width: 96%;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.2);
             animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1);
             margin: auto;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 230px 1fr;
+            background: #f8fafc;
         }
+        @keyframes slideUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
 
-        @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-
-        /* Score row — horizontal on mobile */
-        .score-row {
+        /* LEFT PANEL — azul */
+        .res-left {
+            background: var(--osce-blue);
+            padding: 28px 20px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 20px;
+            text-align: center;
+            gap: 0;
         }
-        .score-circle { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
-        .score-circle svg { transform: rotate(-90deg); }
-        .score-circle circle { fill: none; stroke-width: 10; stroke-linecap: round; }
-        .circle-bg { stroke: #F1F5F9; }
-        .circle-progress { stroke: var(--osce-blue); stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 1.5s ease-out; }
-        .score-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
-        .score-number { display: block; font-family: 'Instrument Serif', serif; font-size: 2.4rem; color: var(--osce-blue); line-height: 1; }
-        .score-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .res-left-title { font-family:'Instrument Serif',serif; font-size:1.2rem; color:white; margin:0 0 2px; font-weight:700; }
+        .res-left-sub   { font-size:0.7rem; color:rgba(255,255,255,0.5); margin:0 0 18px; }
 
-        .score-details { text-align: left; }
-        .score-details h2 { margin: 0 0 4px; font-family: 'Instrument Serif', serif; font-size: 1.5rem; color: var(--osce-blue); }
-        .score-details p  { margin: 0 0 12px; font-size: 0.82rem; color: var(--text-muted); }
+        .score-circle { position:relative; width:120px; height:120px; margin-bottom:16px; flex-shrink:0; }
+        .score-circle svg { transform:rotate(-90deg); }
+        .score-circle circle { fill:none; stroke-width:10; stroke-linecap:round; }
+        .circle-bg       { stroke:rgba(255,255,255,0.15); }
+        .circle-progress { stroke:white; stroke-dasharray:283; stroke-dashoffset:283; transition:stroke-dashoffset 1.5s ease-out; }
+        .score-text   { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+        .score-number { display:block; font-family:'Instrument Serif',serif; font-size:2.8rem; color:white; line-height:1; }
+        .score-label  { font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:1px; }
 
-        .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
-        .result-stat { background: var(--bg-light); padding: 12px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
-        .result-stat span { display: block; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .result-stat strong { font-size: 1rem; color: var(--osce-blue); font-weight: 700; }
+        .results-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; margin-bottom:14px; }
+        .result-stat  { background:rgba(255,255,255,0.1); padding:10px 6px; border-radius:10px; text-align:center; }
+        .result-stat span   { display:block; font-size:0.58rem; font-weight:700; color:rgba(255,255,255,0.5); margin-bottom:3px; text-transform:uppercase; letter-spacing:0.5px; }
+        .result-stat strong { font-size:1rem; color:white; font-weight:700; }
 
-        /* Review section (Examen Real) */
-        .review-section { text-align: left; margin-bottom: 18px; }
-        .review-title { font-size: 0.85rem; font-weight: 700; color: var(--osce-blue); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .review-item { border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; font-size: 0.83rem; }
-        .review-item.review-correct { border-color: #bbf7d0; background: #f0fdf4; }
-        .review-item.review-wrong   { border-color: #fecaca; background: #fff5f5; }
-        .review-q { font-weight: 600; color: var(--text-main); margin-bottom: 8px; line-height: 1.4; }
-        .review-ans { display: flex; flex-direction: column; gap: 4px; }
-        .review-ans-row { display: flex; align-items: flex-start; gap: 6px; font-size: 0.8rem; }
-        .review-ans-label { font-weight: 700; flex-shrink: 0; font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; margin-top: 1px; }
-        .label-correct { background: #dcfce7; color: #166534; }
-        .label-wrong   { background: #fee2e2; color: #991b1b; }
-        .label-your    { background: #e0e7ff; color: #3730a3; }
-        .review-sustento { margin-top: 8px; padding: 8px 10px; background: #f0f7ff; border-left: 3px solid var(--osce-blue); border-radius: 0 6px 6px 0; font-size: 0.78rem; color: #475569; line-height: 1.5; }
-        .reviews-scroll { max-height: 260px; overflow-y: auto; padding-right: 4px; }
-        .reviews-scroll::-webkit-scrollbar { width: 4px; }
-        .reviews-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 99px; }
-        .reviews-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+        #feedback-box { width:100%; border-radius:10px; padding:9px 10px; font-weight:700; font-size:0.78rem; text-align:center; }
 
-        @media (max-width: 400px) {
-            .results-card { padding: 20px 16px; }
-            .score-number { font-size: 2rem; }
-            .score-circle { width: 90px; height: 90px; }
+        .res-finish-btn {
+            width:100%; background:white; color:var(--osce-blue); border:none;
+            padding:12px; border-radius:10px; font-weight:700; cursor:pointer;
+            font-size:0.83rem; margin-top:auto; padding-top:14px; transition:opacity .2s;
+        }
+        .res-finish-btn:hover { opacity:.88; }
+
+        /* RIGHT PANEL — blanco con scroll */
+        .res-right {
+            padding: 20px 18px;
+            overflow-y: auto;
+            max-height: 88vh;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .res-right::-webkit-scrollbar { width:5px; }
+        .res-right::-webkit-scrollbar-track { background:#f1f5f9; }
+        .res-right::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
+
+        /* Review */
+        .review-section { text-align:left; }
+        .review-title   { font-size:0.85rem; font-weight:700; color:var(--osce-blue); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+        .review-item    { border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:8px; font-size:0.81rem; }
+        .review-item.review-correct { border-color:#bbf7d0; background:#f0fdf4; }
+        .review-item.review-wrong   { border-color:#fecaca; background:#fff5f5; }
+        .review-q          { font-weight:600; color:var(--text-main); margin-bottom:7px; line-height:1.4; }
+        .review-ans        { display:flex; flex-direction:column; gap:4px; }
+        .review-ans-row    { display:flex; align-items:flex-start; gap:6px; font-size:0.78rem; }
+        .review-ans-label  { font-weight:700; flex-shrink:0; font-size:0.68rem; padding:2px 7px; border-radius:4px; margin-top:1px; }
+        .label-correct { background:#dcfce7; color:#166534; }
+        .label-wrong   { background:#fee2e2; color:#991b1b; }
+        .label-your    { background:#e0e7ff; color:#3730a3; }
+        .review-sustento { margin-top:7px; padding:7px 10px; background:#f0f7ff; border-left:3px solid var(--osce-blue); border-radius:0 6px 6px 0; font-size:0.75rem; color:#475569; line-height:1.5; }
+
+        /* Mobile */
+        @media (max-width:600px) {
+            .results-card { grid-template-columns:1fr; }
+            .res-right    { max-height:none; }
+            .res-finish-btn { margin-top:16px; }
         }
 
         /* TOPIC BREAKDOWN */
@@ -340,7 +365,7 @@
         .pct-bad   { color: var(--osce-red); }
 
         .topics-scroll {
-            max-height: 220px;
+            max-height: 380px;
             overflow-y: auto;
             padding-right: 4px;
         }
@@ -517,46 +542,45 @@
     <div id="results-overlay" class="modal-overlay">
         <div class="results-card">
 
-            <!-- Score row -->
-            <div class="score-row">
+            <!-- LEFT: puntaje azul -->
+            <div class="res-left">
+                <p class="res-left-title">Resultado Final</p>
+                <p class="res-left-sub">Simulacro Ley 32069</p>
+
                 <div class="score-circle">
-                    <svg width="110" height="110">
-                        <circle class="circle-bg" cx="55" cy="55" r="45"></circle>
-                        <circle id="score-ring" class="circle-progress" cx="55" cy="55" r="45"></circle>
+                    <svg width="120" height="120">
+                        <circle class="circle-bg" cx="60" cy="60" r="45"></circle>
+                        <circle id="score-ring" class="circle-progress" cx="60" cy="60" r="45"></circle>
                     </svg>
                     <div class="score-text">
                         <span id="score-val" class="score-number">0</span>
                         <span class="score-label">/ <span id="score-total-q">72</span></span>
                     </div>
                 </div>
-                <div class="score-details">
-                    <h2>Resultado Final</h2>
-                    <p>Simulacro Ley 32069</p>
-                    <div id="feedback-box" style="padding:8px 12px; border-radius:8px; font-weight:700; font-size:0.82rem; display:inline-block">
-                        <span id="feedback-msg">Evaluando...</span>
+
+                <div class="results-grid">
+                    <div class="result-stat"><span>Eficacia</span><strong id="res-percent">0%</strong></div>
+                    <div class="result-stat"><span>Tiempo</span><strong id="res-time">0 min</strong></div>
+                </div>
+
+                <div id="feedback-box"><span id="feedback-msg">Evaluando...</span></div>
+
+                <button class="res-finish-btn" onclick="location.reload()">Finalizar y Volver al Inicio</button>
+            </div>
+
+            <!-- RIGHT: temas + revisión -->
+            <div class="res-right">
+                <div class="topic-breakdown" id="topic-breakdown"></div>
+
+                <div class="review-section" id="review-section" style="display:none">
+                    <div class="review-title">
+                        <span>Revisión de Respuestas</span>
+                        <span id="review-count" style="font-size:0.75rem;color:var(--text-muted);font-weight:600"></span>
                     </div>
+                    <div id="reviews-container"></div>
                 </div>
             </div>
 
-            <!-- Stats -->
-            <div class="results-grid">
-                <div class="result-stat"><span>Eficacia</span><strong id="res-percent">0%</strong></div>
-                <div class="result-stat"><span>Tiempo</span><strong id="res-time">0 min</strong></div>
-            </div>
-
-            <!-- Topic breakdown -->
-            <div class="topic-breakdown" id="topic-breakdown"></div>
-
-            <!-- Review (solo Examen Real) -->
-            <div class="review-section" id="review-section" style="display:none">
-                <div class="review-title">
-                    <span>Revisión de Respuestas</span>
-                    <span id="review-count" style="font-size:0.75rem; color:var(--text-muted); font-weight:600"></span>
-                </div>
-                <div class="reviews-scroll" id="reviews-container"></div>
-            </div>
-
-            <button onclick="location.reload()" style="width:100%; background:var(--osce-blue); color:white; border:none; padding:15px; border-radius:12px; font-weight:700; cursor:pointer; transition:0.3s; box-shadow:0 4px 12px rgba(0,44,108,0.15); font-size:0.95rem; margin-top:4px">Finalizar y Volver al Inicio</button>
         </div>
     </div>
 
@@ -1144,6 +1168,7 @@
             let wrongCount = 0;
 
             reviewSection.style.display = 'block';
+            document.getElementById('review-section').style.display = 'block';
             reviewContainer.innerHTML   = '';
 
             examQuestions.forEach((q, idx) => {
