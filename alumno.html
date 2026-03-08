@@ -183,7 +183,7 @@
         .q-text { font-family: 'Instrument Serif', serif; font-size: 1.9rem; color: var(--osce-blue); margin-bottom: 35px; line-height: 1.2; }
         
         .option-item { padding: 18px 24px; border: 2px solid var(--border); border-radius: 14px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-weight: 500; font-size: 1rem; }
-        .option-item:hover { background: #f8faff; border-color: var(--osce-blue); }
+        @media (hover: hover) { .option-item:hover { background: #f8faff; border-color: var(--osce-blue); } }
         .option-item.selected-blue { background: #e0e7ff; border-color: var(--osce-blue); }
         .option-item.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #166534; }
         .option-item.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b; }
@@ -246,12 +246,44 @@
             color: #9a3412;
             font-weight: 600;
         }
+
+        /* CUSTOM CONFIRM MODAL */
+        .confirm-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,44,108,0.45);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .confirm-box {
+            background: white;
+            border-radius: 20px;
+            padding: 32px 28px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: 0 24px 60px rgba(0,44,108,0.18);
+            animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+        .confirm-icon { font-size: 2.2rem; margin-bottom: 12px; display: block; text-align: center; }
+        .confirm-title { font-family: 'Instrument Serif', serif; font-size: 1.5rem; color: var(--osce-blue); text-align: center; margin: 0 0 10px; }
+        .confirm-msg { color: var(--text-muted); font-size: 0.9rem; text-align: center; line-height: 1.6; margin: 0 0 24px; }
+        .confirm-btns { display: flex; gap: 12px; }
+        .confirm-btn { flex: 1; padding: 14px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; border: none; transition: 0.2s; }
+        .confirm-btn-cancel { background: var(--bg-light); color: var(--text-main); border: 1px solid var(--border); }
+        .confirm-btn-ok { background: var(--osce-red); color: white; }
+        .confirm-btn-cancel:active { background: #e2e8f0; }
+        .confirm-btn-ok:active { filter: brightness(0.9); }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
     <nav id="main-nav">
-        <a href="index.html" class="brand">OECE.</a>
+        <a href="index.html" class="brand">OECE</a>
         <div class="user-info">
             <div class="avatar-group">
                 <div class="avatar" id="nav-avatar">—</div>
@@ -415,6 +447,32 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+
+    // ══════════════════════════════════════════════════════
+    // CUSTOM CONFIRM DIALOG
+    // ══════════════════════════════════════════════════════
+    function customConfirm(msg, title, icon) {
+        title = title || '¿Estás seguro?';
+        icon  = icon  || '⚠️';
+        return new Promise(function(resolve) {
+            document.getElementById('confirm-icon').innerText  = icon;
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-msg').innerText   = msg;
+            var overlay = document.getElementById('confirm-overlay');
+            overlay.style.display = 'flex';
+            var okBtn     = document.getElementById('confirm-ok');
+            var cancelBtn = document.getElementById('confirm-cancel');
+            var newOk     = okBtn.cloneNode(true);
+            var newCancel = cancelBtn.cloneNode(true);
+            okBtn.parentNode.replaceChild(newOk, okBtn);
+            cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+            function done(result) { overlay.style.display = 'none'; resolve(result); }
+            newOk.addEventListener('click',     function() { done(true);  });
+            newCancel.addEventListener('click', function() { done(false); });
+        });
+    }
+
+
 
     // ══════════════════════════════════════════════════════
     // SESSION & AUTH GUARD
@@ -673,9 +731,10 @@
         return '';
     }
 
-    function warnOnExitPopState() {
+    async function warnOnExitPopState() {
         if (!isExamRunning) return;
-        if (confirm('⚠️ Si sales ahora perderás todo tu avance en el examen. ¿Deseas abandonar?')) {
+        var leave = await customConfirm('Si sales ahora perderás todo tu avance en el examen.', '¿Abandonar examen?', '⚠️');
+        if (leave) {
             isExamRunning = false;
             window.onbeforeunload = null;
             window.onpopstate = null;
@@ -792,7 +851,8 @@
     // ══════════════════════════════════════════════════════
     async function finishExam(auto = false) {
         if (!auto) {
-            if (!confirm('⚠️ ¿Seguro que deseas finalizar el simulacro? Si sales ahora se perderá tu avance.')) return;
+            var ok = await customConfirm('Si sales ahora se perderá todo tu avance en el simulacro.', '¿Finalizar examen?', '📝');
+            if (!ok) return;
         }
 
         isExamRunning = false;
@@ -883,9 +943,10 @@
     // ══════════════════════════════════════════════════════
     // LOGOUT
     // ══════════════════════════════════════════════════════
-    function handleLogout() {
+    async function handleLogout() {
         if (isExamRunning) {
-            if (!confirm('⚠️ Tienes un examen en curso. Si cierras sesión perderás todo tu avance. ¿Continuar?')) return;
+            var ok = await customConfirm('Tienes un examen en curso. Si cierras sesión perderás todo tu avance.', '¿Cerrar sesión?', '🚪');
+            if (!ok) return;
         }
         isExamRunning = false;
         window.onbeforeunload = null;
@@ -898,5 +959,18 @@
     // ══════════════════════════════════════════════════════
     loadQuestions().catch(console.error);
     </script>
+
+    <!-- CUSTOM CONFIRM MODAL -->
+    <div id="confirm-overlay" class="confirm-overlay">
+        <div class="confirm-box">
+            <span class="confirm-icon" id="confirm-icon">⚠️</span>
+            <h3 class="confirm-title" id="confirm-title">¿Estás seguro?</h3>
+            <p class="confirm-msg" id="confirm-msg"></p>
+            <div class="confirm-btns">
+                <button class="confirm-btn confirm-btn-cancel" id="confirm-cancel">Cancelar</button>
+                <button class="confirm-btn confirm-btn-ok" id="confirm-ok">Confirmar</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
