@@ -283,7 +283,7 @@
 <body oncontextmenu="return false;">
 
     <nav id="main-nav">
-        <a href="index.html" class="brand">OECE</a>
+        <a href="index.html" class="brand">OECE.</a>
         <div class="user-info">
             <div class="avatar-group">
                 <div class="avatar" id="nav-avatar">—</div>
@@ -618,17 +618,43 @@
         shuffle(selected);
 
         // For each question, create a shuffled options mapping
-        examQuestions = selected.map(q => {
+        // Anti-bias: track last 2 correct positions to avoid 3+ consecutive same letter
+        const mapped = selected.map(q => {
             const originalOpts = Array.isArray(q.opciones) ? q.opciones : JSON.parse(q.opciones || '[]');
             const correctText  = originalOpts[q.respuesta_correcta];
-            // Shuffle options
             const shuffledOpts = shuffleArray([...originalOpts]);
             const newCorrectIdx = shuffledOpts.indexOf(correctText);
-            return {
-                ...q,
-                displayOpts: shuffledOpts,
-                correctDisplayIdx: newCorrectIdx
-            };
+            return { ...q, displayOpts: shuffledOpts, correctDisplayIdx: newCorrectIdx };
+        });
+
+        // Anti-consecutive-letter pass: if 2 in a row share same correctDisplayIdx,
+        // force the 3rd to land on a different position by swapping within its options.
+        const recentIdxs = [];
+        examQuestions = mapped.map(q => {
+            const opts    = [...q.displayOpts];
+            let cidx      = q.correctDisplayIdx;
+            const correct = opts[cidx];
+
+            // If last 2 correct answers were both at position cidx, reshuffle until different
+            if (recentIdxs.length >= 2 &&
+                recentIdxs[recentIdxs.length - 1] === cidx &&
+                recentIdxs[recentIdxs.length - 2] === cidx) {
+
+                // Find all other positions (not cidx)
+                const others = [0, 1, 2, 3].filter(i => i !== cidx);
+                // Pick a random different target position
+                const targetPos = others[Math.floor(Math.random() * others.length)];
+                // Swap correct answer to targetPos
+                const displaced = opts[targetPos];
+                opts[targetPos] = correct;
+                opts[cidx]      = displaced;
+                cidx            = targetPos;
+            }
+
+            recentIdxs.push(cidx);
+            if (recentIdxs.length > 2) recentIdxs.shift();
+
+            return { ...q, displayOpts: opts, correctDisplayIdx: cidx };
         });
 
         userAnswers = new Array(examQuestions.length).fill(null);
