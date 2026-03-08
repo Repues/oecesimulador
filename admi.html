@@ -511,25 +511,38 @@
                         if (!['intermedio','avanzado'].includes(item.nivel)) throw new Error(`nivel inválido: ${item.nivel}`);
                     }
 
-                    status.innerText = `✅ Subiendo ${data.length} preguntas a Firestore...`;
+                    status.innerText = `⏳ Contando preguntas existentes...`;
 
-                    const batch = db.batch();
-                    data.forEach((q, i) => {
-                        const ref = db.collection('preguntas').doc(`P${String(i + 1).padStart(3, '0')}`);
-                        batch.set(ref, {
-                            texto: q.texto,
-                            opciones: q.opciones,
-                            respuesta_correcta: q.respuesta_correcta,
-                            sustento_legal: q.sustento_legal,
-                            tema: q.tema,
-                            nivel: q.nivel
+                    // Contar preguntas existentes para continuar desde ese índice
+                    const existingSnap = await db.collection('preguntas').get();
+                    const startIndex = existingSnap.size;
+
+                    status.innerText = `⏳ Subiendo ${data.length} preguntas (desde #${startIndex + 1})...`;
+
+                    // Firestore permite máx 500 operaciones por batch — dividir si es necesario
+                    const BATCH_LIMIT = 499;
+                    for (let offset = 0; offset < data.length; offset += BATCH_LIMIT) {
+                        const chunk = data.slice(offset, offset + BATCH_LIMIT);
+                        const batch = db.batch();
+                        chunk.forEach((q, i) => {
+                            const globalIdx = startIndex + offset + i + 1;
+                            const ref = db.collection('preguntas').doc(`P${String(globalIdx).padStart(4, '0')}`);
+                            batch.set(ref, {
+                                texto: q.texto,
+                                opciones: q.opciones,
+                                respuesta_correcta: q.respuesta_correcta,
+                                sustento_legal: q.sustento_legal,
+                                tema: q.tema,
+                                nivel: q.nivel
+                            });
                         });
-                    });
-                    await batch.commit();
+                        await batch.commit();
+                    }
 
-                    status.innerText = `✅ Éxito: ${data.length} preguntas cargadas en Firestore.`;
+                    const total = startIndex + data.length;
+                    status.innerText = `✅ Éxito: ${data.length} preguntas añadidas. Total en base de datos: ${total}.`;
                     status.style.color = 'var(--success)';
-                    toast(`${data.length} preguntas cargadas correctamente.`);
+                    toast(`${data.length} preguntas añadidas. Total: ${total}.`);
                     loadQuestions();
                 } catch(err) {
                     status.innerText = `❌ Error: ${err.message}`;
