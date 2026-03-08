@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificación Ley 32069 | OECE</title>
+    <style media="print">* { display: none !important; }</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --osce-blue: #002C6C;
+            --osce-red: #D91023;
+            --bg-light: #F8FAFC;
+            --text-main: #1D2129;
+            --text-muted: #64748B;
+            --white: #FFFFFF;
+            --border: #E2E8F0;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-light); 
+            margin: 0; 
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- FONDO RED NEURONAL --- */
+        .hero {
+            position: relative;
+            padding: 120px 10% 160px;
+            background: #ffffff;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border);
+        }
+
+        #neural-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hero-content { position: relative; z-index: 2; }
+
+        /* --- NAV & HERO --- */
+        nav {
+            background: var(--white);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--osce-red);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: relative; z-index: 10;
+        }
+
+        .brand { font-weight: 700; color: var(--osce-blue); text-decoration: none; font-size: 1.4rem; }
+        .btn-nav { background: var(--osce-blue); color: white; padding: 8px 20px; border-radius: 4px; text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        .cases-badge { background: #E2E8F0; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; color: var(--osce-blue); display: inline-block; }
+        
+        .hero h1 { 
+            font-size: 4rem; 
+            margin: 20px 0; 
+            font-family: 'Instrument Serif', serif; 
+            color: var(--osce-blue); 
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+        
+        .hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 600px; margin-bottom: 40px; }
+        .btn-primary { background: var(--osce-red); color: white; border: none; padding: 18px 36px; border-radius: 8px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(217, 16, 35, 0.2); transition: transform 0.2s; }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .btn-outline { background: transparent; color: var(--osce-blue); border: 2px solid var(--osce-blue); padding: 16px 34px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-left: 12px; }
+
+        /* --- GRID & CARDS --- */
+        .grid-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 30px; 
+            padding: 0 10%; 
+            margin-top: -60px; 
+            position: relative; 
+            z-index: 5;
+            perspective: 1200px;
+        }
+
+        .anth-card { 
+            background: var(--white); 
+            padding: 45px; 
+            border-radius: 20px; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 10px 30px rgba(0,44,108,0.06); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+            cursor: default;
+        }
+
+        .anth-card.featured { border: 2px solid var(--osce-blue); }
+        .benefits-list { list-style: none; padding: 0; margin: 25px 0; font-size: 0.95rem; line-height: 2; }
+        .price-value { font-size: 2.2rem; font-weight: 800; color: var(--osce-blue); }
+        .btn-card { background: var(--osce-blue); color: white; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 700; display: block; margin-top: 25px; }
+
+        /* MODAL */
+        #exam-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-light); z-index: 2000; overflow-y: auto; }
+        .exam-inner { max-width: 800px; margin: 60px auto; padding: 50px; background: white; border-radius: 24px; box-shadow: 0 30px 60px rgba(0,0,0,0.1); }
+        .option { padding: 18px 24px; border: 2px solid var(--border); border-radius: 12px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-weight: 500; }
+        .option:hover { border-color: var(--osce-blue); background: #f4f8ff; }
+        .selected-right { background: #dcfce7 !important; border-color: #22c55e !important; color: #166534; }
+        .selected-wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b; }
+        .sustento { background: #f8fafc; border-left: 5px solid var(--osce-blue); padding: 30px; margin-top: 35px; border-radius: 0 12px 12px 0; }
+        
+        footer { text-align: center; padding: 80px 20px; color: var(--text-muted); font-size: 0.85rem; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.8rem; }
+            .grid-container { margin-top: 40px; padding: 0 5%; }
+            .btn-outline { margin-left: 0; margin-top: 10px; display: block; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#" class="brand">OECE</a>
+        <div class="nav-right">
+            <a href="login.html" class="btn-nav">Ingresar Simulacro</a>
+        </div>
+    </nav>
+
+    <header class="hero" id="hero-section">
+        <!-- Canvas para la Red Neuronal -->
+        <canvas id="neural-canvas"></canvas>
+
+        <div class="hero-content">
+            <span class="cases-badge">Actualizado: Ley 32069</span>
+            <h1>Simulador OECE<br>Certificación Técnica en Contrataciones.</h1>
+            <p>Entrena con la base de datos más completa de casuística real. Simulacros inteligentes con sustento normativo de alta precisión.</p>
+
+            <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                <button class="btn-primary" onclick="openSim()">Probar Simulador →</button>
+                <a href="login.html" class="btn-outline">Ver Planes Full</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="grid-container">
+        <div class="anth-card js-tilt">
+            <div>
+                <h3>Plan Base</h3>
+                <p>Preparación esencial para gestores públicos.</p>
+                <ul class="benefits-list">
+                    <li>✓ <strong>2 meses</strong> de uso ilimitado.</li>
+                    <li>✓ +1000 casos actualizados.</li>
+                    <li>✓ 60% Niv. Intermedio/40% Niv. Avanzado.</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <span class="price-value">S/ 30.00</span>
+                <a href="https://wa.me/51964310396" class="btn-card">Adquirir →</a>
+            </div>
+        </div>
+
+        <div class="anth-card featured js-tilt">
+            <div>
+                <span style="background:var(--osce-blue); color:white; padding:4px 10px; border-radius:4px; font-size:0.7rem; font-weight:700">EXPERTO</span>
+                <h3 style="margin-top:15px">Plan Avanzado</h3>
+                <p>Dominio total para el examen de certificación.</p>
+                <ul class="benefits-list">
+                    <li>✓ <strong>3 meses</strong> de uso ilimitado.</li>
+                    <li>✓ Casuística Experta 100%.</li>
+                    <li>✓ Sustento Legal Detallado.</li>
+                    <li>✓ Simulacros Predictivos.</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <span class="price-value">S/ 45.00</span>
+                <a href="https://wa.me/51964310396" class="btn-card" style="background:var(--osce-red)">Adquirir →</a>
+            </div>
+        </div>
+
+        <div class="anth-card js-tilt">
+            <div>
+                <h3>Institucional</h3>
+                <p>Soluciones para equipos de logística y entidades.</p>
+                <ul class="benefits-list">
+                    <li>✓ Gestión de múltiples usuarios.</li>
+                    <li>✓ Métricas de cumplimiento.</li>
+                    <li>✓ Webinars trimestrales.</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <span class="price-value" style="font-size:1.2rem">Consulte precio</span>
+                <a href="https://wa.me/51964310396" class="btn-card">Contactar →</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="exam-modal">
+        <div class="exam-inner">
+            <p id="q-category" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:var(--osce-red);margin-bottom:16px"></p>
+            <h2 id="q-text" style="font-family:'Instrument Serif',serif; font-size:2.4rem; color:var(--osce-blue); line-height:1.2; letter-spacing:-0.5px"></h2>
+            <div id="options-box" style="margin-top:30px"></div>
+            <div id="sustento-box" class="sustento">
+                <h4 style="margin-top:0; color:var(--osce-blue)">Análisis OECE:</h4>
+                <p id="sustento-text" style="line-height:1.6; color:#475569"></p>
+                <button onclick="nextQuestion()" class="btn-primary" style="margin-top:20px; width:auto; padding:12px 25px">Continuar →</button>
+            </div>
+            <button onclick="closeSim()" style="margin-top:40px; cursor:pointer; border:none; background:none; color:var(--text-muted); font-weight:500">← Salir de la Demo</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 OECE — Academia de Gestión Pública. Formación técnica bajo estándares internacionales.</p>
+    </footer>
+
+    <script>
+        /**
+         * LÓGICA DE RED NEURONAL INTERACTIVA
+         */
+        const canvas = document.getElementById('neural-canvas');
+        const ctx = canvas.getContext('2d');
+        const heroSection = document.getElementById('hero-section');
+        
+        let particles = [];
+        const particleCount = 60;
+        const connectionDistance = 150;
+        const mouse = { x: null, y: null, radius: 180 };
+
+        function initCanvas() {
+            canvas.width = heroSection.offsetWidth;
+            canvas.height = heroSection.offsetHeight;
+        }
+
+        window.addEventListener('resize', initCanvas);
+        heroSection.addEventListener('mousemove', (e) => {
+            const rect = heroSection.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+        });
+
+        heroSection.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = (Math.random() - 0.5) * 0.8;
+                this.speedY = (Math.random() - 0.5) * 0.8;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Rebote bordes
+                if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+                if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+
+                // Reacción al mouse (Atracción suave)
+                if (mouse.x !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouse.radius) {
+                        this.x += dx * 0.02;
+                        this.y += dy * 0.02;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = 'rgba(0, 44, 108, 0.15)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function createParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < connectionDistance) {
+                        ctx.strokeStyle = `rgba(0, 44, 108, ${0.15 * (1 - distance/connectionDistance)})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        initCanvas();
+        createParticles();
+        animate();
+
+
+        /**
+         * LÓGICA DE TARJETAS 3D
+         */
+        const cards = document.querySelectorAll('.js-tilt');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 15;
+                const rotateY = (centerX - x) / 15;
+                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
+            });
+        });
+
+        /**
+         * LÓGICA DE EXAMEN DEMO
+         */
+        const demoQuestions = [
+            {
+                q: "¿Qué principio de la Ley 32069 prioriza la eficiencia y el ciclo de vida por sobre el precio nominal?",
+                cat: "Nivel Intermedio",
+                options: ["Eficacia", "Valor por Dinero", "Integridad", "Competencia"],
+                correct: 1,
+                sustento: "El Principio de Valor por Dinero (Art. 3) busca maximizar el valor total del gasto, considerando calidad, sostenibilidad y mantenimiento."
+            },
+            {
+                q: "En la fase de ejecución, ¿cuál es el nuevo enfoque de gestión por resultados?",
+                cat: "Nivel Avanzado",
+                options: ["Pago por tiempo transcurrido", "Hitos vinculados a entrega de valor", "Eliminación de penalidades", "Pago único al finalizar"],
+                correct: 1,
+                sustento: "La Ley 32069 vincula los pagos a la culminación de hitos técnicos que demuestren avance real y efectivo en el objeto contractual."
+            }
+        ];
+
+        let demoIdx = 0;
+        function openSim() { 
+            demoIdx = 0; 
+            document.getElementById('exam-modal').style.display = 'block'; 
+            document.body.style.overflow = 'hidden';
+            renderDemoQuestion(); 
+        }
+        function closeSim() { 
+            document.getElementById('exam-modal').style.display = 'none'; 
+            document.body.style.overflow = 'auto';
+        }
+        function renderDemoQuestion() {
+            const data = demoQuestions[demoIdx];
+            document.getElementById('q-category').innerText = `Demo: ${data.cat}`;
+            document.getElementById('q-text').innerText = data.q;
+            document.getElementById('sustento-box').style.display = 'none';
+            const box = document.getElementById('options-box');
+            box.innerHTML = '';
+            data.options.forEach((opt, i) => {
+                const div = document.createElement('div');
+                div.className = 'option'; div.innerText = opt;
+                div.onclick = () => {
+                    const opts = document.querySelectorAll('.option');
+                    opts.forEach(o => o.style.pointerEvents = 'none');
+                    if(i === data.correct) div.classList.add('selected-right');
+                    else { div.classList.add('selected-wrong'); opts[data.correct].classList.add('selected-right'); }
+                    document.getElementById('sustento-text').innerText = data.sustento;
+                    document.getElementById('sustento-box').style.display = 'block';
+                };
+                box.appendChild(div);
+            });
+        }
+        function nextQuestion() {
+            demoIdx++;
+            if (demoIdx < demoQuestions.length) renderDemoQuestion();
+            else { closeSim(); }
+        }
+    </script>
+</body>
+</html>
