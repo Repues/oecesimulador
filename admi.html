@@ -235,6 +235,12 @@
                         <option value="intermedio">Intermedio</option>
                         <option value="avanzado">Avanzado</option>
                     </select>
+                    <select id="filter-competencia" onchange="applyFilters()" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:0.85rem; flex:1; min-width:160px;">
+                        <option value="">Todas las competencias</option>
+                        <option value="Actuaciones Preparatorias">Actuaciones Preparatorias</option>
+                        <option value="Fase de Selección">Fase de Selección</option>
+                        <option value="Ejecución Contractual">Ejecución Contractual</option>
+                    </select>
                     <button id="btn-delete-selected" class="btn btn-danger" onclick="deleteSelected()" style="display:none; padding:8px 16px; font-size:0.85rem;">
                         🗑 Eliminar seleccionadas (<span id="selected-count">0</span>)
                     </button>
@@ -248,10 +254,11 @@
                             <th>Pregunta</th>
                             <th>Tema</th>
                             <th>Nivel</th>
+                            <th>Competencia</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
-                    <tbody id="questions-table-body"><tr class="loading-row"><td colspan="6">Cargando preguntas...</td></tr></tbody>
+                    <tbody id="questions-table-body"><tr class="loading-row"><td colspan="7">Cargando preguntas...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -347,6 +354,132 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        // ── Mapeo tema → competencia ───────────────────────────────
+        const TEMA_COMP_MAP = {
+  "actuaciones preparatorias": "Actuaciones Preparatorias",
+  "requerimiento": "Actuaciones Preparatorias",
+  "impedimentos para contratar": "Actuaciones Preparatorias",
+  "impedimentos": "Actuaciones Preparatorias",
+  "especificaciones técnicas": "Actuaciones Preparatorias",
+  "especificaciones tecnicas": "Actuaciones Preparatorias",
+  "eett": "Actuaciones Preparatorias",
+  "tdr": "Actuaciones Preparatorias",
+  "términos de referencia": "Actuaciones Preparatorias",
+  "terminos de referencia": "Actuaciones Preparatorias",
+  "valor referencial": "Actuaciones Preparatorias",
+  "valor estimado": "Actuaciones Preparatorias",
+  "pac": "Actuaciones Preparatorias",
+  "plan anual de contrataciones": "Actuaciones Preparatorias",
+  "aprobación de expediente": "Actuaciones Preparatorias",
+  "aprobacion de expediente": "Actuaciones Preparatorias",
+  "certificación presupuestal": "Actuaciones Preparatorias",
+  "certificacion presupuestal": "Actuaciones Preparatorias",
+  "prohibiciones": "Actuaciones Preparatorias",
+  "contrataciones especiales": "Actuaciones Preparatorias",
+  "métodos especiales": "Actuaciones Preparatorias",
+  "metodos especiales": "Actuaciones Preparatorias",
+  "compras corporativas": "Actuaciones Preparatorias",
+  "contratación directa": "Actuaciones Preparatorias",
+  "contratacion directa": "Actuaciones Preparatorias",
+  "contrataciones directas": "Actuaciones Preparatorias",
+  "catálogo electrónico": "Actuaciones Preparatorias",
+  "catalogo electronico": "Actuaciones Preparatorias",
+  "homologación": "Actuaciones Preparatorias",
+  "homologacion": "Actuaciones Preparatorias",
+  "subasta inversa": "Actuaciones Preparatorias",
+  "planificación": "Actuaciones Preparatorias",
+  "planificacion": "Actuaciones Preparatorias",
+  "cuadro de necesidades": "Actuaciones Preparatorias",
+  "gestión de riesgos": "Actuaciones Preparatorias",
+  "gestion de riesgos": "Actuaciones Preparatorias",
+  "modalidades": "Actuaciones Preparatorias",
+  "modalidades / responsabilidad": "Actuaciones Preparatorias",
+  "responsabilidad del contratista": "Actuaciones Preparatorias",
+  "métodos de contratación": "Fase de Selección",
+  "metodos de contratacion": "Fase de Selección",
+  "métodos de selección": "Fase de Selección",
+  "metodos de seleccion": "Fase de Selección",
+  "procedimiento de selección": "Fase de Selección",
+  "procedimiento de seleccion": "Fase de Selección",
+  "bases": "Fase de Selección",
+  "convocatoria": "Fase de Selección",
+  "evaluación de ofertas": "Fase de Selección",
+  "evaluacion de ofertas": "Fase de Selección",
+  "buena pro": "Fase de Selección",
+  "consentimiento": "Fase de Selección",
+  "impugnación": "Fase de Selección",
+  "impugnacion": "Fase de Selección",
+  "nulidad del proceso": "Fase de Selección",
+  "seace": "Fase de Selección",
+  "rnp": "Fase de Selección",
+  "registro nacional de proveedores": "Fase de Selección",
+  "calificación": "Fase de Selección",
+  "calificacion": "Fase de Selección",
+  "calificación / rnp": "Fase de Selección",
+  "licitación pública": "Fase de Selección",
+  "licitacion publica": "Fase de Selección",
+  "concurso público": "Fase de Selección",
+  "concurso publico": "Fase de Selección",
+  "adjudicación simplificada": "Fase de Selección",
+  "adjudicacion simplificada": "Fase de Selección",
+  "selección de consultores": "Fase de Selección",
+  "seleccion de consultores": "Fase de Selección",
+  "comparación de precios": "Fase de Selección",
+  "comparacion de precios": "Fase de Selección",
+  "diálogo competitivo": "Fase de Selección",
+  "dialogo competitivo": "Fase de Selección",
+  "postores": "Fase de Selección",
+  "consorcios": "Fase de Selección",
+  "consorcio": "Fase de Selección",
+  "garantías": "Ejecución Contractual",
+  "garantias": "Ejecución Contractual",
+  "garantías contractuales": "Ejecución Contractual",
+  "garantias contractuales": "Ejecución Contractual",
+  "contrato": "Ejecución Contractual",
+  "penalidades": "Ejecución Contractual",
+  "penalidad": "Ejecución Contractual",
+  "adicionales": "Ejecución Contractual",
+  "resolución de contrato": "Ejecución Contractual",
+  "resolucion de contrato": "Ejecución Contractual",
+  "liquidación": "Ejecución Contractual",
+  "liquidacion": "Ejecución Contractual",
+  "ejecución contractual": "Ejecución Contractual",
+  "ejecucion contractual": "Ejecución Contractual",
+  "jprd": "Ejecución Contractual",
+  "arbitraje": "Ejecución Contractual",
+  "conciliación": "Ejecución Contractual",
+  "conciliacion": "Ejecución Contractual",
+  "obras": "Ejecución Contractual",
+  "supervisión": "Ejecución Contractual",
+  "supervision": "Ejecución Contractual",
+  "valorizaciones": "Ejecución Contractual",
+  "valorización": "Ejecución Contractual",
+  "adelantos": "Ejecución Contractual",
+  "modificaciones contractuales": "Ejecución Contractual",
+  "modificación contractual": "Ejecución Contractual",
+  "ampliación de plazo": "Ejecución Contractual",
+  "ampliacion de plazo": "Ejecución Contractual",
+  "control / adicionales": "Ejecución Contractual",
+  "bim / obras": "Ejecución Contractual",
+  "bim": "Ejecución Contractual",
+  "liquidación de obra": "Ejecución Contractual",
+  "liquidacion de obra": "Ejecución Contractual",
+  "infracciones y sanciones": "Ejecución Contractual",
+  "infracciones": "Ejecución Contractual",
+  "sanciones": "Ejecución Contractual",
+  "gobernanza": "Ejecución Contractual",
+  "integridad": "Ejecución Contractual",
+  "ética en el arbitraje": "Ejecución Contractual",
+  "etica en el arbitraje": "Ejecución Contractual",
+  "solución de controversias": "Ejecución Contractual",
+  "solucion de controversias": "Ejecución Contractual"
+};
+
+        function inferCompetencia(tema) {
+            if (!tema) return 'Actuaciones Preparatorias';
+            return TEMA_COMP_MAP[tema.toLowerCase().trim()] || 'Actuaciones Preparatorias';
+        }
 
 
         // ── MOBILE SIDEBAR ─────────────────────────────────────────
@@ -552,7 +685,7 @@
                         // Si hay ID existente reutilizarlo, si no crear nuevo
                         const id  = sortedIds[offset + i] || `P${String(existingSize + offset + i + 1).padStart(4,'0')}`;
                         const ref = db.collection('preguntas').doc(id);
-                        batch.set(ref, { texto:q.texto, opciones:q.opciones, respuesta_correcta:q.respuesta_correcta, sustento_legal:q.sustento_legal, tema:q.tema, nivel:q.nivel });
+                        batch.set(ref, { texto:q.texto, opciones:q.opciones, respuesta_correcta:q.respuesta_correcta, sustento_legal:q.sustento_legal, tema:q.tema, nivel:q.nivel, competencia: q.competencia || inferCompetencia(q.tema) });
                     });
                     await batch.commit();
                 }
@@ -566,7 +699,7 @@
                     chunk.forEach((q, i) => {
                         const globalIdx = existingSize + offset + i + 1;
                         const ref = db.collection('preguntas').doc(`P${String(globalIdx).padStart(4,'0')}`);
-                        batch.set(ref, { texto:q.texto, opciones:q.opciones, respuesta_correcta:q.respuesta_correcta, sustento_legal:q.sustento_legal, tema:q.tema, nivel:q.nivel });
+                        batch.set(ref, { texto:q.texto, opciones:q.opciones, respuesta_correcta:q.respuesta_correcta, sustento_legal:q.sustento_legal, tema:q.tema, nivel:q.nivel, competencia: q.competencia || inferCompetencia(q.tema) });
                     });
                     await batch.commit();
                 }
@@ -708,9 +841,11 @@
         function applyFilters() {
             const tema  = document.getElementById('filter-tema').value;
             const nivel = document.getElementById('filter-nivel').value;
+            const comp  = document.getElementById('filter-competencia').value;
             let filtered = allQuestionsCache;
             if (tema)  filtered = filtered.filter(q => q.tema  === tema);
             if (nivel) filtered = filtered.filter(q => q.nivel === nivel);
+            if (comp)  filtered = filtered.filter(q => (q.competencia || inferCompetencia(q.tema)) === comp);
             renderTable(filtered);
         }
 
@@ -721,20 +856,28 @@
             updateDeleteBtn();
 
             if (list.length === 0) {
-                tbody.innerHTML = '<tr class="loading-row"><td colspan="6">No hay preguntas con ese filtro.</td></tr>';
+                tbody.innerHTML = '<tr class="loading-row"><td colspan="7">No hay preguntas con ese filtro.</td></tr>';
                 return;
             }
 
             list.forEach((q, i) => {
                 const tr = document.createElement('tr');
                 tr.dataset.id = q.id;
+                const comp = q.competencia || inferCompetencia(q.tema);
+                const compShort = comp === 'Actuaciones Preparatorias' ? 'Act. Prep.' : comp === 'Fase de Selección' ? 'Selección' : 'Ejec. Cont.';
+                const compColor = comp === 'Actuaciones Preparatorias' ? '#dbeafe' : comp === 'Fase de Selección' ? '#fef9c3' : '#dcfce7';
+                const compText  = comp === 'Actuaciones Preparatorias' ? '#1e40af' : comp === 'Fase de Selección' ? '#854d0e' : '#166534';
                 tr.innerHTML = `
                     <td><input type="checkbox" class="q-check" onchange="updateDeleteBtn()"></td>
                     <td style="color:var(--text-muted);font-size:0.8rem">${q.id}</td>
-                    <td style="max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${q.texto}</td>
-                    <td style="font-size:0.85rem">${q.tema || '—'}</td>
+                    <td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${q.texto}</td>
+                    <td style="font-size:0.82rem">${q.tema || '—'}</td>
                     <td><span class="status-badge ${q.nivel === 'intermedio' ? 'status-active' : 'status-warning'}">${q.nivel}</span></td>
-                    <td><button class="btn btn-danger" style="padding:4px 10px;font-size:0.75rem" onclick="deleteQuestion('${q.id}')">Eliminar</button></td>`;
+                    <td><span style="font-size:0.72rem;font-weight:700;padding:3px 8px;border-radius:20px;background:${compColor};color:${compText}">${compShort}</span></td>
+                    <td style="display:flex;gap:5px">
+                        <button class="btn" style="padding:4px 8px;font-size:0.72rem;background:#f1f5f9;border:1px solid var(--border);color:var(--text-main)" onclick="editCompetencia('${q.id}','${comp}')">✏️</button>
+                        <button class="btn btn-danger" style="padding:4px 10px;font-size:0.75rem" onclick="deleteQuestion('${q.id}')">Eliminar</button>
+                    </td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -771,6 +914,36 @@
             document.getElementById('check-all').checked = false;
             updateDeleteBtn();
             await loadQuestions();
+        }
+
+        async function editCompetencia(id, currentComp) {
+            const options = ['Actuaciones Preparatorias', 'Fase de Selección', 'Ejecución Contractual'];
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:flex;align-items:center;justify-content:center;';
+            modal.innerHTML = `<div style="background:white;border-radius:16px;padding:28px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+                <h3 style="margin:0 0 6px;color:var(--osce-blue);font-size:1rem">Editar Competencia</h3>
+                <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px">Pregunta ID: <strong>${id}</strong></p>
+                <select id="comp-select" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.9rem;margin-bottom:16px">
+                    ${options.map(o => `<option value="${o}" ${o === currentComp ? 'selected' : ''}>${o}</option>`).join('')}
+                </select>
+                <div style="display:flex;gap:10px">
+                    <button id="comp-cancel" class="btn btn-secondary" style="flex:1">Cancelar</button>
+                    <button id="comp-save" class="btn btn-primary" style="flex:1">Guardar</button>
+                </div>
+            </div>`;
+            document.body.appendChild(modal);
+            modal.querySelector('#comp-cancel').onclick = () => modal.remove();
+            modal.querySelector('#comp-save').onclick = async () => {
+                const newComp = modal.querySelector('#comp-select').value;
+                modal.remove();
+                try {
+                    await db.collection('preguntas').doc(id).update({ competencia: newComp });
+                    toast(`Competencia actualizada a: ${newComp}`);
+                    loadQuestions();
+                } catch(e) {
+                    toast('Error al actualizar.', 'error');
+                }
+            };
         }
 
         async function deleteQuestion(id) {
